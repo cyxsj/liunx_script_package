@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.business.mapper.PaymentScheduleDetailMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.business.domain.PaymentScheduleDetail">
+    <id column="id" property="id" />
+    <result column="bidAmount" property="bidAmount" />
+    <result column="bidId" property="bidId" />
+    <result column="totalAmount" property="totalAmount" />
+    <result column="principal" property="principal" />
+    <result column="interest" property="interest" />
+    <result column="monthIndex" property="monthIndex" />
+    <result column="deadLine" property="deadLine" />
+    <result column="bidRequestId" property="bidRequestId" />
+    <result column="payDate" property="payDate" />
+    <result column="returnType" property="returnType" />
+    <result column="paymentScheduleId" property="paymentScheduleId" />
+    <result column="toLoginInfoId" property="toLoginInfoId" />
+
+
+    <!--<result column="fromLoginInfoId" property="fromLoginInfoId" />-->
+    <association property="fromLoginInfo" column="fromLoginInfoId"
+                 select="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.selectById"/>
+
+  </resultMap>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into paymentscheduledetail (bidAmount, bidId, totalAmount, principal, interest, monthIndex, 
+      deadLine, bidRequestId, payDate, returnType, paymentScheduleId, 
+      fromLoginInfoId, toLoginInfoId)
+    values (#{bidAmount}, #{bidId}, #{totalAmount}, #{principal}, #{interest}, #{monthIndex}, 
+      #{deadLine}, #{bidRequestId}, #{payDate}, #{returnType}, #{paymentScheduleId}, 
+      #{fromLoginInfo.id}, #{toLoginInfoId})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update paymentscheduledetail
+    set bidAmount = #{bidAmount},
+      bidId = #{bidId},
+      totalAmount = #{totalAmount},
+      principal = #{principal},
+      interest = #{interest},
+      monthIndex = #{monthIndex},
+      deadLine = #{deadLine},
+      bidRequestId = #{bidRequestId},
+      payDate = #{payDate},
+      returnType = #{returnType},
+      paymentScheduleId = #{paymentScheduleId},
+      fromLoginInfoId = #{fromLoginInfo.id},
+      toLoginInfoId = #{toLoginInfoId}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, bidAmount, bidId, totalAmount, principal, interest, monthIndex, deadLine, 
+    bidRequestId, payDate, returnType, paymentScheduleId, fromLoginInfoId, toLoginInfoId
+    from paymentscheduledetail
+    where id = #{id}
+  </select>
+
+  <select id="listByPsId" resultMap="BaseResultMap">
+    select id, bidAmount, bidId, totalAmount, principal, interest, monthIndex, deadLine,
+      bidRequestId, payDate, returnType, paymentScheduleId, fromLoginInfoId, toLoginInfoId
+    from paymentscheduledetail
+    where paymentScheduleId = #{id}
+  </select>
+</mapper>

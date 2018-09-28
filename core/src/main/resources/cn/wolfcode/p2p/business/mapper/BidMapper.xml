@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.business.mapper.BidMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.business.domain.Bid">
+        <id column="id" property="id"/>
+        <result column="actualRate" property="actualRate"/>
+        <result column="availableAmount" property="availableAmount"/>
+        <result column="bidRequestId" property="bidRequestId"/>
+        <result column="bidTime" property="bidTime"/>
+        <result column="bidRequestTitle" property="bidRequestTitle"/>
+        <result column="bidRequestState" property="bidRequestState"/>
+        <!--<result column="bidUserId" property="bidUserId" />-->
+
+        <association property="bidUser" column="bidUserId"
+                     select="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.selectById"/>
+
+    </resultMap>
+
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO bid (actualRate, availableAmount, bidRequestId, bidUserId, bidTime,
+                         bidRequestTitle, bidRequestState)
+        VALUES (#{actualRate}, #{availableAmount}, #{bidRequestId}, #{bidUser.id}, #{bidTime},
+                #{bidRequestTitle}, #{bidRequestState})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE bid
+        SET actualRate      = #{actualRate},
+            availableAmount = #{availableAmount},
+            bidRequestId    = #{bidRequestId},
+            bidUserId       = #{bidUser.id},
+            bidTime         = #{bidTime},
+            bidRequestTitle = #{bidRequestTitle},
+            bidRequestState = #{bidRequestState}
+        WHERE id = #{id}
+    </update>
+
+
+    <update id="batchUpdateState">
+        update bid
+        set bidRequestState = #{state}
+        where bidRequestId = #{bidRequestId}
+    </update>
+
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+            id,
+            actualRate,
+            availableAmount,
+            bidRequestId,
+            bidUserId,
+            bidTime,
+            bidRequestTitle,
+            bidRequestState
+        FROM bid
+        WHERE id = #{id}
+    </select>
+    <select id="listByBidRequestId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            actualRate,
+            availableAmount,
+            bidRequestId,
+            bidUserId,
+            bidTime,
+            bidRequestTitle,
+            bidRequestState
+        FROM bid
+        WHERE bidRequestId =#{bidRequestId}
+    </select>
+    <select id="sumUserBidAmountByBidRequestId" resultType="decimal">
+        select ifnull(sum(availableAmount),0)
+        from bid
+        where bidRequestId = #{bidRequestId} and bidUserId = #{userId}
+    </select>
+    <select id="selectAll" resultType="int">
+        SELECT
+            count(distinct bidUserId)
+        FROM bid
+    </select>
+</mapper>

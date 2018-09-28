@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.base.mapper.SystemDictionaryMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.base.domain.SystemDictionary">
+    <id column="id" property="id" />
+    <result column="sn" property="sn" />
+    <result column="title" property="title" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey">
+    delete from systemdictionary
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into systemdictionary (sn, title)
+    values (#{sn}, #{title})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update systemdictionary
+    set sn = #{sn},
+      title = #{title}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, sn, title
+    from systemdictionary
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, sn, title
+    from systemdictionary
+  </select>
+
+
+    <select id="queryForList" resultMap="BaseResultMap">
+      SELECT id,sn,title
+      FROM systemdictionary
+      <include refid="base_where"/>
+      LIMIT #{start},#{pageSize}
+    </select>
+
+  <select id="queryForCount" resultType="int">
+    select count(0) from systemdictionary
+    <include refid="base_where"/>
+  </select>
+
+  <sql id="base_where">
+    <where>
+      <if test="keyword != null and keyword != ''">
+        and (sn like concat('%',#{keyword},'%') or title like concat('%',#{keyword},'%'))
+      </if>
+    </where>
+  </sql>
+
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.base.mapper.RealAuthMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.base.domain.RealAuth">
+        <id column="id" property="id"/>
+        <result column="realName" property="realName"/>
+        <result column="sex" property="sex"/>
+        <result column="bornDate" property="bornDate"/>
+        <result column="idNumber" property="idNumber"/>
+        <result column="address" property="address"/>
+        <result column="state" property="state"/>
+        <result column="image1" property="image1"/>
+        <result column="image2" property="image2"/>
+        <result column="remark" property="remark"/>
+        <result column="auditTime" property="auditTime"/>
+        <result column="applyTime" property="applyTime"/>
+
+        <association property="applier" columnPrefix="ap_" javaType="cn.wolfcode.p2p.base.domain.LoginInfo">
+            <id property="id" column="id"/>
+            <result column="username" property="username"/>
+        </association>
+
+        <association property="auditor" columnPrefix="au_" resultMap="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.simpleRessultMap"/>
+            <!--<id property="id" column="id"/>
+            <result column="username" property="username"/>
+        </association>-->
+    </resultMap>
+
+
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM realauth
+        WHERE id = #{id}
+    </delete>
+
+
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO realauth (realname, sex, bornDate, idNumber, address, state, image1,
+                              image2, remark, auditTime, applyTime, auditorId, applierId)
+        VALUES (#{realName}, #{sex}, #{bornDate}, #{idNumber}, #{address}, #{state}, #{image1},
+                             #{image2}, #{remark}, #{auditTime}, #{applyTime}, #{auditor.id}, #{applier.id})
+    </insert>
+
+
+    <update id="updateByPrimaryKey">
+        UPDATE realauth
+        SET realname  = #{realName},
+            sex       = #{sex},
+            bornDate  = #{bornDate},
+            idNumber  = #{idNumber},
+            address   = #{address},
+            state     = #{state},
+            image1    = #{image1},
+            image2    = #{image2},
+            remark    = #{remark},
+            auditTime = #{auditTime},
+            applyTime = #{applyTime},
+            auditorId = #{auditor.id},
+            applierId = #{applier.id}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT
+        <include refid="base_columns"/>
+        FROM
+        <include refid="base_tab"/>
+        WHERE re.id = #{id}
+    </select>
+
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            realname,
+            sex,
+            bornDate,
+            idNumber,
+            address,
+            state,
+            image1,
+            image2,
+            remark,
+            auditTime,
+            applyTime,
+            auditorId,
+            applierId
+        FROM realauth
+    </select>
+
+
+    <sql id="base_where">
+        <where>
+            <if test="state != -1">
+              and re.state = #{state}
+            </if>
+            <if test="beginDate != null ">
+              and re.applyTime &gt;= #{beginDate}
+            </if>
+            <if test="endDate != null ">
+                and re.applyTime &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <select id="queryForCount" resultType="int">
+      select count(0) from realauth re
+        <include refid="base_where"/>
+    </select>
+
+    <select id="queryForList" resultMap="BaseResultMap">
+        SELECT
+            <include refid="base_columns"/>
+        FROM
+            <include refid="base_tab"/>
+        <include refid="base_where"/>
+        LIMIT #{start},#{pageSize}
+    </select>
+
+
+
+    <sql id="base_tab">
+        realauth re
+        JOIN logininfo ap ON ap.id = re.applierId
+        LEFT JOIN logininfo au ON au.id = re.auditorId
+    </sql>
+    
+    <sql id="base_columns">
+        re.id,
+        re.realname,
+        re.sex,
+        re.bornDate,
+        re.idNumber,
+        re.address,
+        re.state,
+        re.image1,
+        re.image2,
+        re.remark,
+        re.auditTime,
+        re.applyTime,
+        re.auditorId,
+        re.applierId,
+
+        ap.id ap_id,
+        ap.username ap_username,
+        au.id au_id,
+        au.username au_username
+    </sql>
+    
+</mapper>

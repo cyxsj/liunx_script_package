@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.business.mapper.PaymentScheduleMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.business.domain.PaymentSchedule">
+    <id column="id" property="id" />
+    <result column="deadLine" property="deadLine" />
+    <result column="payDate" property="payDate" />
+    <result column="totalAmount" property="totalAmount" />
+    <result column="principal" property="principal" />
+    <result column="interest" property="interest" />
+    <result column="monthIndex" property="monthIndex" />
+    <result column="state" property="state" />
+    <result column="bidRequestType" property="bidRequestType" />
+    <result column="returnType" property="returnType" />
+    <result column="bidRequestId" property="bidRequestId" />
+    <result column="createUserId" property="createUserId" />
+    <result column="bidRequestTitle" property="bidRequestTitle" />
+
+    <collection property="details" column="id"
+                select="cn.wolfcode.p2p.business.mapper.PaymentScheduleDetailMapper.listByPsId"/>
+  </resultMap>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into paymentschedule (deadLine, payDate, totalAmount, principal, interest, monthIndex, 
+      state, bidRequestType, returnType, bidRequestId, createUserId, bidRequestTitle
+      )
+    values (#{deadLine}, #{payDate}, #{totalAmount}, #{principal}, #{interest}, #{monthIndex}, 
+      #{state}, #{bidRequestType}, #{returnType}, #{bidRequestId}, #{createUserId}, #{bidRequestTitle}
+      )
+  </insert>
+  <update id="updateByPrimaryKey">
+    update paymentschedule
+    set deadLine = #{deadLine},
+      payDate = #{payDate},
+      totalAmount = #{totalAmount},
+      principal = #{principal},
+      interest = #{interest},
+      monthIndex = #{monthIndex},
+      state = #{state},
+      bidRequestType = #{bidRequestType},
+      returnType = #{returnType},
+      bidRequestId = #{bidRequestId},
+      createUserId = #{createUserId},
+      bidRequestTitle = #{bidRequestTitle}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, deadLine, payDate, totalAmount, principal, interest, monthIndex, state, 
+    bidRequestType, returnType, bidRequestId, createUserId, bidRequestTitle
+    from paymentschedule
+    where id = #{id}
+  </select>
+
+  <sql id="base_where">
+    <where>
+      <if test="state != -1">
+        and ps.state = #{state}
+      </if>
+      <if test="beginDate != null ">
+        and ps.deadLine &gt;= #{beginDate}
+      </if>
+      <if test="endDate != null ">
+        and ps.deadLine &lt;= #{endDate}
+      </if>
+    </where>
+  </sql>
+
+
+  <select id="queryForCount" resultType="int">
+    SELECT count(0)
+    FROM  paymentschedule ps
+    <include refid="base_where"/>
+  </select>
+  <select id="queryForList" resultMap="BaseResultMap">
+    select id, deadLine, payDate, totalAmount, principal, interest, monthIndex, state,
+      bidRequestType, returnType, bidRequestId, createUserId, bidRequestTitle
+    from paymentschedule ps
+    <include refid="base_where"/>
+  </select>
+
+
+  <select id="listByBidRequestId" resultMap="BaseResultMap">
+    select id, deadLine, payDate, totalAmount, principal, interest, monthIndex, state,
+      bidRequestType, returnType, bidRequestId, createUserId, bidRequestTitle
+    from paymentschedule
+    where bidRequestId = #{bidRequestId}
+  </select>
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.base.mapper.VideoAuthMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.base.domain.VideoAuth">
+    <id column="id" property="id" />
+    <result column="state" property="state" />
+    <result column="remark" property="remark" />
+    <result column="auditTime" property="auditTime" />
+    <result column="applyTime" property="applyTime" />
+    <result column="orderBeginDate" property="orderBeginDate" />
+    <result column="orderEndDate" property="orderEndDate" />
+
+    <association property="auditor" columnPrefix="au_" resultMap="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.simpleRessultMap"/>
+    <association property="applier" columnPrefix="ap_" resultMap="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.simpleRessultMap"/>
+
+  </resultMap>
+  <delete id="deleteByPrimaryKey">
+    delete from videoauth
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into videoauth (state, remark, auditTime, applyTime, auditorId, applierId, 
+      orderBeginDate, orderEndDate)
+    values (#{state}, #{remark}, #{auditTime}, #{applyTime}, #{auditor.id}, #{applier.id},
+      #{orderBeginDate}, #{orderEndDate})
+  </insert>
+  <update id="updateByPrimaryKey">
+    update videoauth
+    set state = #{state},
+      remark = #{remark},
+      auditTime = #{auditTime},
+      applyTime = #{applyTime},
+      auditorId = #{auditor.id},
+      applierId = #{applier.id},
+      orderBeginDate = #{orderBeginDate},
+      orderEndDate = #{orderEndDate}
+    where id = #{id}
+  </update>
+
+
+
+  <sql id="base_columns">
+    v.id, v.state, v.remark, v.auditTime, v.applyTime, v.auditorId, v.applierId, v.orderBeginDate,
+    v.orderEndDate,
+    ap.id ap_id,ap.username ap_username,
+    au.id au_id,au.username au_username
+  </sql>
+
+  <sql id="base_tab">
+    videoauth v
+    JOIN logininfo ap ON ap.id = v.applierId
+    LEFT JOIN logininfo au ON au.id = v.auditorId
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select <include refid="base_columns"/>
+    from <include refid="base_tab"/>
+    where v.id = #{id}
+  </select>
+
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, state, remark, auditTime, applyTime, auditorId, applierId, orderBeginDate, 
+    orderEndDate
+    from videoauth
+  </select>
+
+  <select id="getByStateAudUserId" resultMap="BaseResultMap">
+    select <include refid="base_columns"/>
+    from <include refid="base_tab"/>
+    WHERE v.applierId = #{userId} and v.state = #{state}
+  </select>
+
+
+
+  <select id="queryForCount" resultType="int">
+    SELECT count(0) FROM
+      <include refid="base_tab"/>
+      <include refid="base_where"/>
+  </select>
+
+
+  <select id="queryForList" resultMap="BaseResultMap">
+    SELECT <include refid="base_columns"/>
+    FROM <include refid="base_tab"/>
+    <include refid="base_where"/>
+    LIMIT #{start},#{pageSize}
+  </select>
+  
+  <sql id="base_where">
+    <where>
+      <if test="state != -1">
+        and v.state = #{state}
+      </if>
+      <if test="beginDate != null ">
+        and v.orderBeginDate &gt;= #{beginDate}
+      </if>
+      <if test="endDate != null ">
+        and v.orderBeginDate &lt;= #{endDate}
+      </if>
+      <if test="username != null  and username != ''">
+        and ap.username = #{username}
+      </if>
+      <if test="auditorId != -1">
+        and v.auditorId = #{auditorId}
+      </if>
+    </where>
+  </sql>
+
+
+</mapper>

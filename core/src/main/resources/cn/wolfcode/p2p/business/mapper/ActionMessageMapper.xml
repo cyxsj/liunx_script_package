@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.business.mapper.ActionMessageMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.business.domain.ActionMessage">
+    <id column="id" property="id" />
+    <result column="title" property="title" />
+    <result column="context" property="context" />
+    <result column="state" property="state" />
+    <result column="noteTime" property="noteTime" />
+    <result column="readState" property="readState" />
+
+    <association property="receiver" columnPrefix="ao_"
+                 resultMap="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.simpleRessultMap"/>
+  </resultMap>
+
+
+  <update id="updateState">
+    update actionmessage set readState = true where id = #{id}
+  </update>
+
+
+  <delete id="deleteByPrimaryKey">
+    delete from actionmessage
+    where id = #{id}
+  </delete>
+  <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+    insert into actionmessage (title,noteTime, context, receiverId, state, readState)
+    values (#{title}, #{noteTime},#{context}, #{receiver.id}, #{state}, #{readState})
+  </insert>
+
+  <select id="selectById" resultMap="BaseResultMap">
+    SELECT
+      id,
+      title,
+      context,
+      noteTime,
+      receiverId,
+      state,
+      readState
+    FROM actionmessage
+    WHERE receiverId = #{id}
+  </select>
+  <select id="selectBySms" resultMap="BaseResultMap">
+    SELECT
+      id,
+      title,
+      context,
+      noteTime,
+      receiverId,
+      state,
+      readState
+    FROM actionmessage
+    WHERE id = #{id}
+  </select>
+
+  <select id="getBySmsId" resultType="int">
+    SELECT count(id)
+    FROM actionmessage
+    WHERE receiverId = #{id} and readState = #{b}
+  </select>
+
+  <!--<sql id="base_where">
+    <where>
+      <if test="state != -1">
+        and ac.state = #{state}
+      </if>
+      <if test="beginDate != null ">
+        and ac.noteTime &gt;= #{beginDate}
+      </if>
+      <if test="endDate != null ">
+        and ac.noteTime &lt;= #{endDate}
+      </if>
+      and ac.receiverId = #{userId}
+    </where>
+  </sql>
+
+
+    <select id="queryForList" resultMap="BaseResultMap">
+      select
+      ac.id,
+      ac.title,
+      ac.context,
+      ac.noteTime,
+      ac.receiverId,
+      ac.state,
+      ac.readState,
+      ao.id ao_id,
+      ao.username ao_username
+      from actionmessage ac
+      join logininfo ao ON ao.id = ac.receiverId
+      <include refid="base_where"/>
+    </select>
+
+  <select id="queryForCount" resultType="int">
+    SELECT count(0) FROM  actionmessage
+    <include refid="base_where"/>
+  </select>-->
+  <!--
+  select count(ac.id)
+    from actionmessage ac
+      join logininfo ao ON ao.id = ac.receiverId
+    WHERE ac.receiverId = #{userId} and readState = FALSE
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select id, title, context,noteTime, receiverId, state, readState
+    from actionmessage
+    where id = #{id}
+  </select>-->
+</mapper>

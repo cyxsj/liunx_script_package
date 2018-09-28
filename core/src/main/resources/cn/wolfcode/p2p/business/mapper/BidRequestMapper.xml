@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.p2p.business.mapper.BidRequestMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.p2p.business.domain.BidRequest">
+        <id column="id" property="id"/>
+        <result column="version" property="version"/>
+        <result column="bidRequestType" property="bidRequestType"/>
+        <result column="bidRequestState" property="bidRequestState"/>
+        <result column="bidRequestAmount" property="bidRequestAmount"/>
+        <result column="currentRate" property="currentRate"/>
+        <result column="monthes2Return" property="monthes2Return"/>
+        <result column="bidCount" property="bidCount"/>
+        <result column="totalRewardAmount" property="totalRewardAmount"/>
+        <result column="currentSum" property="currentSum"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="note" property="note"/>
+        <result column="disableDate" property="disableDate"/>
+        <result column="disableDays" property="disableDays"/>
+        <result column="minBidAmount" property="minBidAmount"/>
+        <result column="applyTime" property="applyTime"/>
+        <result column="publishTime" property="publishTime"/>
+        <!--<result column="createUserId" property="createUserId"/>-->
+
+        <association property="createUser" columnPrefix="ap_"
+                     resultMap="cn.wolfcode.p2p.base.mapper.LoginInfoMapper.simpleRessultMap"/>
+
+        <collection property="bids" column="id" ofType="cn.wolfcode.p2p.business.domain.Bid"
+                    select="cn.wolfcode.p2p.business.mapper.BidMapper.listByBidRequestId"/>
+    </resultMap>
+
+
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO bidrequest (version, bidRequestType, bidRequestState, bidRequestAmount, currentRate,
+                                monthes2Return, bidCount, totalRewardAmount, currentSum, title,
+                                description, note, disableDate, createUserId, disableDays, minBidAmount,
+                                applyTime, publishTime)
+        VALUES (#{version}, #{bidRequestType}, #{bidRequestState}, #{bidRequestAmount}, #{currentRate},
+                            #{monthes2Return}, #{bidCount}, #{totalRewardAmount}, #{currentSum}, #{title},
+                            #{description}, #{note}, #{disableDate}, #{createUser.id}, #{disableDays}, #{minBidAmount},
+                #{applyTime}, #{publishTime})
+    </insert>
+    <update id="updateByPrimaryKey">
+        UPDATE bidrequest
+        SET version           = version + 1,
+            bidRequestType    = #{bidRequestType},
+            bidRequestState   = #{bidRequestState},
+            bidRequestAmount  = #{bidRequestAmount},
+            currentRate       = #{currentRate},
+            monthes2Return    = #{monthes2Return},
+            bidCount          = #{bidCount},
+            totalRewardAmount = #{totalRewardAmount},
+            currentSum        = #{currentSum},
+            title             = #{title},
+            description       = #{description},
+            note              = #{note},
+            disableDate       = #{disableDate},
+            createUserId      = #{createUser.id},
+            disableDays       = #{disableDays},
+            minBidAmount      = #{minBidAmount},
+            applyTime         = #{applyTime},
+            publishTime       = #{publishTime}
+
+        WHERE id = #{id} AND version = #{version}
+    </update>
+
+    <sql id="base_columns">
+        br.id,
+        br.version,
+        br.bidRequestType,
+        br.bidRequestState,
+        br.bidRequestAmount,
+        br.currentRate,
+        br.monthes2Return,
+        br.bidCount,
+        br.totalRewardAmount,
+        br.currentSum,
+        br.title,
+        br.description,
+        br.note,
+        br.disableDate,
+        br.createUserId,
+        br.disableDays,
+        br.minBidAmount,
+        br.applyTime,
+        br.publishTime,
+        ap.id ap_id, ap.username ap_username
+    </sql>
+
+    <sql id="base_tab">
+        bidrequest br JOIN logininfo ap ON ap.id = br.createUserId
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT<include refid="base_columns"/>
+        FROM<include refid="base_tab"/>
+        WHERE br.id = #{id}
+    </select>
+
+    <sql id="base_where">
+      <where>
+          <if test="bidRequestState != -1">
+            and br.bidRequestState = #{bidRequestState}
+          </if>
+          <if test="bidRequestStates != null ">
+              and bidRequestState in
+              <foreach collection="bidRequestStates" open="(" item="state" separator="," close=")">
+                  #{state}
+              </foreach>
+          </if>
+      </where>
+    </sql>
+
+    <select id="queryForCount" resultType="int">
+      select count(0) from bidrequest br
+        <include refid="base_where"/>
+    </select>
+
+
+    <select id="queryForList" resultMap="BaseResultMap">
+      select <include refid="base_columns"/>
+        from <include refid="base_tab"/>
+        <include refid="base_where"/>
+
+        <if test="orderBy != null ">
+          ORDER BY ${orderBy} <if test="orderType != null "> ${orderType} </if>
+        </if>
+
+        <if test="pageSize != -1">
+          limit #{start},#{pageSize}
+        </if>
+    </select>
+    <select id="totalCreateUser" resultType="int">
+        SELECT count(ap.id)
+        FROM <include refid="base_tab"/>
+    </select>
+
+    <select id="totalBidRequestAmount" resultType="decimal">
+        SELECT sum(bidRequestAmount)
+          FROM  bidrequest
+        WHERE bidRequestState = 8 OR 9
+    </select>
+
+    <select id="totalRewardAmount" resultType="decimal">
+        SELECT sum(br.totalRewardAmount) - sum(ac.unReceiveInterest)
+        FROM  bidrequest br JOIN  account ac ON ac.id = br.createUserId
+    </select>
+</mapper>
